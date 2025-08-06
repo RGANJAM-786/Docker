@@ -1,0 +1,32 @@
+version: "3"
+services:
+     springapp:
+         image: rganjam/spring image:1.0.0
+         ports:
+         - 8080:8080
+         depends_on:
+         - mango
+         networks:
+         - app_network
+         environment:
+          environment:
+          - MONGO_DB_HOSTNAME=mongo
+          - MONGO_DB_USERNAME=devdb
+          - MONGO_DB_PASSWORD=dev@123
+     mongo:
+         image: mango
+         networks:
+         - app_network
+         environment:
+         - MONGO_INITDB_ROOT_USERNAME=devdb
+        - MONGO_INITDB_ROOT_PASSWORD=dev@123
+         volumes:
+         - db_volume:/data/db
+        -  
+
+networks:
+app_network:
+ driver:bridge
+
+volumes:
+ db_volume:
