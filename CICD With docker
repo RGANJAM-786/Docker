@@ -1,0 +1,75 @@
+pipeline
+{
+    agent any
+    tools
+    {
+        maven 'maven-3.9.9'
+    }
+    stages
+    {
+        stage('git checkout')
+        {
+            steps
+            {
+                git branch: 'main', url: 'https://github.com/RGANJAM-786/spring-boot-mongo-docker-kkfunda.git'
+            }
+        }
+        stage('build')
+        {
+            steps
+            {
+                sh "mvn clean package"
+            }
+        }
+        stage('SonarQube') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh """
+                    mvn sonar:sonar \
+                        -Dsonar.projectKey=spring-boot-mongo \
+                        -Dsonar.projectName='Spring Boot Mongo Project' \
+                    """
+                }
+            }
+        }
+        stage('build & tag docker image')
+        {
+            steps
+            {
+                script
+                {
+                    withDockerRegistry(credentialsId: 'docker')
+                    {
+                        sh 'docker build -t rganjam/springapp:latest .'
+                    }
+                }
+            }
+        }
+        stage('docker push')
+        {
+            steps
+            {
+                script
+                {
+                    withDockerRegistry(credentialsId: 'docker')
+                    {
+                        sh 'docker push rganjam/springapp:latest'
+                    }
+                }
+            }
+        }
+        stage('deploy to cd')
+        {
+            steps
+            {
+                script
+                {
+                    withDockerRegistry(credentialsId: 'docker')
+                    {
+                        sh 'docker run -d -p 8081:8080 --name sprintapp rganjam/springapp:latest'
+                    }
+                }
+            }
+        }
+    }
+}
