@@ -1,1 +1,39 @@
+
+
+#Switch to root user & create a docker file as shown below 
+
+FROM jenkins/jenkins:lts
+USER root
+RUN apt-get update && apt-get install -y sudo
+USER jenkins
+
+
+#By using this docker file create a docker image
+
+docker build -t jenkins/jenkins:latest .
+
+
+#Create a docker volume 
+
+docker volume create jenkinsvolume
+
+
+
+
+# create a docker container for jenkins image
+
 docker run -d -p 8080:8080 --name jekinscontainer -v jenkinsvolume:/var/jenkins_home jenkins/jenkins:latest
+
+
+
+docker run -d → correct (runs in detached mode).
+
+-p 8080:8080 → correct (exposes Jenkins UI on your host at port 8080).
+
+--name jekinscontainer → ✅ fine, though I notice a small typo (jekinscontainer instead of jenkinscontainer). It will still work, but maybe better to keep consistent naming.
+
+-v jenkinsvolume:/var/jenkins_home → ✅ correct — maps your named volume (jenkinsvolume) to Jenkins home directory (where all jobs/configs/plugins are stored).
+
+jenkins/jenkins:latest → ✅ valid image (though usually jenkins/jenkins:lts is recommended for stability in production).
+
+
